@@ -4,6 +4,11 @@ const { default: mongoose } = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
+const { createTooken, readTooken } = require('../middleware/validateTooken');
+const {
+  TOOKEN_EXPIRED_TIMEOUT,
+  REFRESH_TOOKEN_EXPIRED_TIMEOUT,
+} = require('../config/contants');
 // @desc
 /**
  * create a user
@@ -50,27 +55,78 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new Error('please enter all fields');
   }
   const user = await User.findOne({ email });
-  if (user && (await bcrypt.compare(password, user.password))) {
-    const accessToken = jwt.sign(
-      {
-        user: {
-          username: user.username,
-          email: user.email,
-          id: user.id,
-        },
-      },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: '15m' }
-    );
-    res.json({
-      accessToken,
+  // user is already exist
+  if (user) {
+    const dataRes = {
       username: user.username,
       email: user.email,
       id: user.id,
+    };
+
+    const accessTooken = createTooken(
+      dataRes,
+      TOOKEN_EXPIRED_TIMEOUT,
+      process.env.ACCESS_TOKEN_SECRET
+    );
+    const refreshTooken = createTooken(
+      dataRes,
+      REFRESH_TOOKEN_EXPIRED_TIMEOUT,
+      process.env.ACCESS_REFRESH_TOKEN_SECRET
+    );
+    // response
+    res.status(200).json({
+      ...dataRes,
+      refreshTooken,
+      accessTooken,
     });
   } else {
-    res.status(401);
+    res.status(400);
     throw new Error('email or password not valid');
+  }
+});
+
+/**
+ * login
+ * @method POST /users/login
+ */
+const refreshTooken = asyncHandler(async (req, res) => {
+  console.log('first');
+  // res.json({ dkfjdk: 'dfsdj' });
+  const { refreshTooken } = req.body;
+  try {
+    if (!refreshTooken) {
+      res.status(400);
+      throw new Error('Can not refresh');
+    }
+    const user = await readTooken(
+      refreshTooken,
+      process.env.ACCESS_REFRESH_TOKEN_SECRET
+    );
+    // user is already exist
+    if (user) {
+      const dataRes = {
+        username: user.username,
+        email: user.email,
+        id: user.id,
+      };
+
+      const accessTooken = createTooken(
+        dataRes,
+        TOOKEN_EXPIRED_TIMEOUT,
+        process.env.ACCESS_TOKEN_SECRET
+      );
+      // response
+      res.status(200).json({
+        accessTooken,
+        refreshTooken,
+      });
+    } else {
+      res.status(400);
+      throw new Error('Can not refresh');
+    }
+  } catch (error) {
+    res.status(400);
+    throw new Error('Can not refresh');
   }
 });
 
@@ -86,4 +142,7 @@ module.exports = {
   registerUser,
   currentUser,
   loginUser,
+  refreshTooken,
 };
+
+// && (await bcrypt.compare(password, user.password))
