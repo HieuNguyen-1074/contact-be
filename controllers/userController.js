@@ -90,15 +90,13 @@ const loginUser = asyncHandler(async (req, res) => {
  * @method POST /users/login
  */
 const refreshTooken = asyncHandler(async (req, res) => {
-  console.log('first');
-  // res.json({ dkfjdk: 'dfsdj' });
   const { refreshTooken } = req.body;
   try {
     if (!refreshTooken) {
       res.status(400);
       throw new Error('Can not refresh');
     }
-    const user = await readTooken(
+    const { dataUser: user } = await readTooken(
       refreshTooken,
       process.env.ACCESS_REFRESH_TOKEN_SECRET
     );
@@ -109,7 +107,7 @@ const refreshTooken = asyncHandler(async (req, res) => {
         email: user.email,
         id: user.id,
       };
-
+      console.log(user);
       const accessTooken = createTooken(
         dataRes,
         TOOKEN_EXPIRED_TIMEOUT,
