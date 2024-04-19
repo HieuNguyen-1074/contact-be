@@ -1,13 +1,15 @@
 const asyncHandler = require('express-async-handler');
 const Contact = require('../models/contactModel');
 const { default: mongoose } = require('mongoose');
+const { uploadInageToFirebase } = require('../middleware/firebaseAction');
 // @desc
 
 /**
  * get all contacts
  */
 const getContacts = asyncHandler(async (req, res) => {
-  const contacts = await Contact.find({ user_id: req.user.id });
+  console.log(req.user);
+  const contacts = await Contact.find({ user_id: req.user.dataUser.id });
   res.status(200).json(contacts);
 });
 /**
@@ -30,19 +32,28 @@ const getContact = asyncHandler(async (req, res) => {
  */
 const createContact = asyncHandler(async (req, res) => {
   const { name, email, phone } = req.body;
-  if (!name || !email || !phone) {
-    res.status(400);
-    throw new Error('all fields are required');
+  const avatar = req.file;
+  try {
+    if (!name || !email || !phone || !avatar) {
+      console.log('first');
+      res.status(400);
+      throw new Error('all fields are required');
+    }
+    const url = await uploadInageToFirebase(avatar);
+    console.log(url);
+    const contact = await Contact.create({
+      user_id: req.user?.dataUser.id,
+      name,
+      phone,
+      email,
+      img: url,
+    });
+
+    res.status(201).json(contact);
+  } catch (error) {
+    res.status(500);
+    throw new Error('server error' + error);
   }
-
-  const contact = await Contact.create({
-    user_id: req.user.id,
-    name,
-    phone,
-    email,
-  });
-
-  res.status(201).json(contact);
 });
 /**
  * update a contact by id

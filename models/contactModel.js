@@ -20,6 +20,8 @@ const contactSchema = mongoose.Schema(
       type: String,
       required: [true, 'please, name '],
     },
+
+    img: { type: Buffer, required: [true, 'please, file '] },
   },
   {
     timestamps: true,

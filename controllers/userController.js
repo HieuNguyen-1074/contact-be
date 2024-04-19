@@ -107,7 +107,6 @@ const refreshTooken = asyncHandler(async (req, res) => {
         email: user.email,
         id: user.id,
       };
-      console.log(user);
       const accessTooken = createTooken(
         dataRes,
         TOOKEN_EXPIRED_TIMEOUT,
