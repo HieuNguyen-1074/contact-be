@@ -13,15 +13,14 @@ const uploadInageToFirebase = async (file) => {
 
   const storageRef = ref(storage, `images/${file.originalname}`);
 
-  const snapshot = await new Promise((resovle, reject) => {
+  const url = await new Promise((resovle, reject) => {
     uploadBytes(storageRef, file).then((snapshot) => {
       getDownloadURL(storageRef).then((downloadURL) => {
         resovle(downloadURL);
       });
     });
   });
-  console.log(snapshot);
-  const url = await fileRef.getDownloadURL();
+
   return url;
 };
 
