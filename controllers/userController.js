@@ -49,39 +49,45 @@ const registerUser = asyncHandler(async (req, res) => {
  * @method POST /users/login
  */
 const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    res.status(400);
-    throw new Error('please enter all fields');
-  }
-  const user = await User.findOne({ email });
-  // user is already exist
-  if (user) {
-    const dataRes = {
-      username: user.username,
-      email: user.email,
-      id: user.id,
-    };
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      res.status(400);
+      throw new Error('please enter all fields');
+    }
+    const user = await User.findOne({ email });
+    // user is already exist
+    if (user) {
+      const dataRes = {
+        username: user.username,
+        email: user.email,
+        id: user.id,
+      };
 
-    const accessTooken = createTooken(
-      dataRes,
-      TOOKEN_EXPIRED_TIMEOUT,
-      process.env.ACCESS_TOKEN_SECRET
-    );
-    const refreshTooken = createTooken(
-      dataRes,
-      REFRESH_TOOKEN_EXPIRED_TIMEOUT,
-      process.env.ACCESS_REFRESH_TOKEN_SECRET
-    );
-    // response
-    res.status(200).json({
-      ...dataRes,
-      refreshTooken,
-      accessTooken,
-    });
-  } else {
-    res.status(400);
-    throw new Error('email or password not valid');
+      const accessTooken = createTooken(
+        dataRes,
+        TOOKEN_EXPIRED_TIMEOUT,
+        process.env.ACCESS_TOKEN_SECRET
+      );
+      const refreshTooken = createTooken(
+        dataRes,
+        REFRESH_TOOKEN_EXPIRED_TIMEOUT,
+        process.env.ACCESS_REFRESH_TOKEN_SECRET
+      );
+      // response
+      res.status(200).json({
+        ...dataRes,
+        refreshTooken,
+        accessTooken,
+      });
+    } else {
+      res.status(400);
+      throw new Error('email or password not valid');
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500);
+    throw new Error('error login');
   }
 });
 
