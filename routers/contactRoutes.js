@@ -5,7 +5,7 @@ const {
   createContact,
   updateContact,
   getContacts,
-} = require('../controllers/contactControler');
+} = require('../controllers/contactController');
 const { validateTooken } = require('../middleware/validateTooken');
 let multer = require('multer');
 let upload = multer();

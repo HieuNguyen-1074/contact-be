@@ -8,10 +8,28 @@ const { uploadInageToFirebase } = require('../middleware/firebaseAction');
  * get all contacts
  */
 const getContacts = asyncHandler(async (req, res) => {
-  console.log(req.user);
-  const contacts = await Contact.find({ user_id: req.user.dataUser.id });
-  res.status(200).json(contacts);
+  const { page, itemPerPage } = req?.query;
+  console.log(req?.query);
+  if (!page || !itemPerPage) {
+    res.status(400);
+    throw new Error('Invalid query parameter');
+  }
+
+  const contacts = await Contact.find({
+    user_id: req.user.dataUser.id,
+  })
+
+    .sort({ createdAt: 1 })
+    .skip(parseInt(page) === 1 ? 0 : (parseInt(page) - 1) * itemPerPage)
+    .limit(itemPerPage);
+
+  const totalRecords = await Contact.countDocuments({
+    user_id: req.user.dataUser.id,
+  });
+
+  res.status(200).json({ list: contacts, totalRecords });
 });
+
 /**
  * get contact by id
  */
