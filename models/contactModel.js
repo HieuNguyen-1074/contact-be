@@ -13,15 +13,15 @@ const contactSchema = mongoose.Schema(
     },
     email: {
       type: String,
-      required: [true, 'please, name '],
+      required: [true, 'please, email '],
     },
 
     phone: {
       type: String,
-      required: [true, 'please, name '],
+      required: [true, 'please, phone '],
     },
 
-    img: { type: Buffer, required: [true, 'please, file '] },
+    avatar: { type: String, required: [true, 'please, file '] },
   },
   {
     timestamps: true,

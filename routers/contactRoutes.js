@@ -16,6 +16,14 @@ router
   .route('/')
   .get(getContacts)
   .post(upload.single(['avatar']), createContact);
-router.route('/:id').put(updateContact).get(getContact).delete(deleteContact);
+router
+  .route('/:id')
+  .put(upload.single(['avatar']), updateContact)
+  .get(getContact);
+
+router
+  .route('/:id')
+
+  .delete(deleteContact);
 
 module.exports = router;
